@@ -12,10 +12,24 @@
         /* 顶部导航 */
         nav {
             position: fixed; top: 0; width: 100%; padding: 15px 30px;
-            display: flex; justify-content: flex-end; z-index: 1000;
+            display: flex; justify-content: flex-end; align-items: center; z-index: 1000;
         }
 
-        /* 全屏封面 - 使用你的图片 */
+        /* 登录后的用户信息样式 */
+        #user-auth-zone { display: flex; align-items: center; cursor: pointer; position: relative; }
+        .user-name-display { color: #61dafb; font-weight: bold; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px); }
+        
+        /* 弹出小名片 */
+        .user-pop-card {
+            position: absolute; top: 50px; right: 0; width: 220px; background: #1e1e1e;
+            border: 1px solid #333; border-radius: 12px; padding: 20px; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+        }
+        .user-pop-card img { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #61dafb; }
+        .user-pop-card p { font-size: 0.8rem; color: #aaa; margin-bottom: 15px; overflow: hidden; text-overflow: ellipsis; }
+        .user-pop-card a { font-size: 0.85rem; color: #61dafb; text-decoration: none; border: 1px solid #61dafb; padding: 5px 10px; border-radius: 5px; }
+
+        /* 全屏封面 */
         .hero {
             height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), 
@@ -30,40 +44,106 @@
         }
         @keyframes bounce { 0%,20%,50%,80%,100% {transform:translateY(0)} 40% {transform:translateY(-10px)} }
 
-        /* 文章列表区 */
+        /* 文章列表 */
         .content-wrap { padding: 80px 20px; max-width: 900px; margin: 0 auto; }
-        .section-title { font-size: 1.8rem; margin-bottom: 40px; color: #61dafb; letter-spacing: 2px; }
-
-        /* 文章卡片 */
-        .post-link { text-decoration: none; color: inherit; display: block; margin-bottom: 30px; }
         .post-card {
             background: rgba(30, 30, 30, 0.8); border-radius: 15px; overflow: hidden;
-            display: flex; transition: 0.3s; border: 1px solid #333; backdrop-filter: blur(5px);
+            display: flex; transition: 0.3s; border: 1px solid #333; backdrop-filter: blur(5px); margin-bottom: 30px;
         }
-        .post-card:hover { transform: translateY(-8px); border-color: #61dafb; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* 文章预览图 - 也使用你的图片 */
-        .post-img { 
-            width: 35%; 
-            background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
-            min-height: 180px; 
-        }
+        .post-img { width: 35%; background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover; min-height: 180px; }
         .post-info { width: 65%; padding: 25px; }
-        .post-info h2 { margin-bottom: 12px; color: #fff; font-size: 1.4rem; }
-        .post-info p { color: #aaa; font-size: 0.95rem; line-height: 1.6; }
-        .post-date { font-size: 0.8rem; color: #61dafb; margin-bottom: 8px; display: block; font-family: monospace; }
+        .post-info h2 { color: #fff; margin-bottom: 10px; }
+        .post-info p { color: #aaa; font-size: 0.9rem; line-height: 1.6; }
 
-        footer { text-align: center; padding: 60px; color: #444; }
-
-        @media (max-width: 600px) {
-            .post-card { flex-direction: column; }
-            .post-img { width: 100%; height: 180px; }
-            .post-info { width: 100%; }
-            #typewriter { font-size: 2rem; }
-        }
+        footer { text-align: center; padding: 40px; color: #444; }
     </style>
 </head>
 <body>
+
+    <nav>
+        <div id="login-btn-container">
+            <div id="g_id_onload" 
+                 data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" 
+                 data-callback="onSignIn"></div>
+            <div class="g_id_signin" data-type="standard"></div>
+        </div>
+
+        <div id="user-auth-zone" style="display: none;" onclick="toggleCard()">
+            <div class="user-name-display" id="display-username">用户名</div>
+            <div class="user-pop-card" id="user-card">
+                <img id="card-pic" src="" alt="avatar">
+                <p id="card-email"></p>
+                <a href="user.html">进入个人中心</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1 id="typewriter"></h1>
+        <a href="#main" class="arrow">↓</a>
+    </header>
+
+    <main id="main" class="content-wrap">
+        <h2 style="margin-bottom:30px; color:#61dafb">LATEST POSTS</h2>
+        <article class="post-card">
+            <div class="post-img"></div>
+            <div class="post-info">
+                <h2>欢迎来到我的空间</h2>
+                <p>点击上方登录，即可解锁个人中心和专属安全密钥。</p>
+            </div>
+        </article>
+    </main>
+
+    <footer>&copy; 2026 浩宝呀</footer>
+
+    <script>
+        // 1. 打字机 (2秒一字)
+        const str = "你好，我是浩宝呀"; 
+        let i = 0;
+        function typing() {
+            if (i < str.length) {
+                document.getElementById("typewriter").innerText += str.charAt(i);
+                i++;
+                setTimeout(typing, 2000);
+            }
+        }
+
+        // 2. 检查登录状态
+        function checkLogin() {
+            const name = localStorage.getItem("u_name");
+            if (name) {
+                document.getElementById("login-btn-container").style.display = "none";
+                document.getElementById("user-auth-zone").style.display = "flex";
+                document.getElementById("display-username").innerText = "欢迎，" + name;
+                document.getElementById("card-pic").src = localStorage.getItem("u_pic");
+                document.getElementById("card-email").innerText = localStorage.getItem("u_email");
+            }
+        }
+
+        // 3. 登录回调
+        function onSignIn(response) {
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            localStorage.setItem("u_name", payload.name);
+            localStorage.setItem("u_email", payload.email);
+            localStorage.setItem("u_pic", payload.picture);
+            localStorage.setItem("u_time", new Date().toLocaleString());
+            localStorage.setItem("u_key", "SK-" + btoa(payload.sub).substring(0, 10).toUpperCase());
+            location.reload(); // 登录后刷新页面应用状态
+        }
+
+        // 4. 切换名片显示
+        function toggleCard() {
+            const card = document.getElementById("user-card");
+            card.style.display = (card.style.display === "block") ? "none" : "block";
+        }
+
+        window.onload = function() {
+            typing();
+            checkLogin();
+        };
+    </script>
+</body>
+</html><body>
 
     <nav>
         <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
