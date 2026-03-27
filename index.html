@@ -5,42 +5,51 @@
     <title>浩宝呀的个人站</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
+        /* 1. 基础样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; }
+        body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; overflow-x: hidden; }
 
-        /* 顶部：登录后显示用户名，没登录显示Google */
-        nav { position: fixed; top: 20px; right: 40px; z-index: 9999; }
-        #user-btn { 
+        /* 2. 导航与登录状态 */
+        nav { position: fixed; top: 20px; right: 40px; z-index: 10000; }
+        #user-info { 
             display: none; background: #61dafb; color: #000; 
             padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; 
         }
 
-        /* 封面 */
+        /* 3. 封面 */
         .hero {
             height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), 
-                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center/cover;
+                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
             display: flex; justify-content: center; align-items: center;
         }
-        #typewriter { font-size: 3rem; border-right: 3px solid #61dafb; min-height: 4rem; }
+        #typewriter { font-size: 3rem; border-right: 3px solid #61dafb; min-height: 4rem; pointer-events: none; }
 
-        /* 文章卡片：增加手型指针和背景色 */
-        .post-list { max-width: 800px; margin: 50px auto; padding: 20px; }
-        .card { 
-            background: #111; border: 1px solid #333; padding: 20px; 
-            border-radius: 10px; cursor: pointer; transition: 0.3s;
+        /* 4. 文章列表 - 提升 z-index 确保可点 */
+        .post-list { 
+            position: relative; z-index: 999; 
+            max-width: 800px; margin: -50px auto 50px; padding: 20px; 
         }
-        .card:hover { border-color: #61dafb; background: #1a1a1a; }
+        .card { 
+            background: #111; border: 1px solid #333; padding: 25px; 
+            border-radius: 12px; cursor: pointer; transition: 0.3s;
+            margin-bottom: 20px;
+        }
+        .card:hover { border-color: #61dafb; transform: translateY(-5px); background: #1a1a1a; }
+        .card h3 { color: #61dafb; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div id="g-box">
-            <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
+        <div id="g_box">
+            <div id="g_id_onload" 
+                 data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" 
+                 data-callback="onSignIn"
+                 data-auto_prompt="true"> </div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
-        <div id="user-btn" onclick="location.href='user.html'">用户名加载中...</div>
+        <div id="user-info" onclick="location.href='user.html'"></div>
     </nav>
 
     <div class="hero">
@@ -48,50 +57,58 @@
     </div>
 
     <div class="post-list">
-        <h2 style="color:#61dafb; margin-bottom:20px;">最新文章</h2>
-        <div class="card" onclick="window.location.href='post1.html'">
+        <h2 style="margin-bottom:20px; color:#aaa; font-size: 1rem; letter-spacing: 2px;">最新发布 / POSTS</h2>
+        
+        <div class="card" onclick="location.href='post1.html'">
             <h3>我的极简博客上线了</h3>
-            <p style="color:#888; margin-top:10px;">点击此卡片即可跳转到文章详情页（前提是你创建了 post1.html）。</p>
+            <p style="color:#888;">点击此区域即可跳转。如果无法跳转，请检查根目录下是否有 post1.html 文件。</p>
         </div>
     </div>
 
     <script>
-        // 1. 打字机 (0.5秒一字，防止你以为没动)
-        const str = "你好，我是浩宝呀";
-        let n = 0;
-        function typeEffect() {
-            if (n < str.length) {
-                document.getElementById("typewriter").innerText += str.charAt(n);
-                n++;
-                setTimeout(typeEffect, 500); 
+        // 1. 打字机 (0.5秒一字)
+        const text = "你好，我是浩宝呀";
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                document.getElementById("typewriter").innerText += text.charAt(i);
+                i++;
+                setTimeout(type, 500);
             }
         }
 
-        // 2. 核心：判断登录状态
-        function updateUI() {
+        // 2. 关键：更新界面并杀掉 Google 弹窗
+        function updateStatus() {
             const name = localStorage.getItem("u_name");
             if (name) {
-                // 登录了：隐藏Google，显示用户名
-                document.getElementById("g-box").style.setProperty("display", "none", "important");
-                const btn = document.getElementById("user-btn");
-                btn.style.display = "block";
-                btn.innerText = "欢迎，" + name;
+                // 1. 隐藏 Google 标准按钮
+                document.getElementById("g_box").style.display = "none";
+                // 2. 显示自定义用户名
+                const info = document.getElementById("user-info");
+                info.style.display = "block";
+                info.innerText = "欢迎，" + name;
+                
+                // 3. 【核心修复】强制关闭 Google 的快捷登录弹窗 (One Tap)
+                if (typeof google !== 'undefined') {
+                    google.accounts.id.cancel(); 
+                }
             }
         }
 
-        // 3. 登录回调
+        // 3. 登录成功回调
         function onSignIn(resp) {
             const user = JSON.parse(atob(resp.credential.split('.')[1]));
             localStorage.setItem("u_name", user.name);
             localStorage.setItem("u_email", user.email);
             localStorage.setItem("u_pic", user.picture);
             localStorage.setItem("u_time", new Date().toLocaleString());
-            location.reload(); // 必须刷新才能切换UI
+            // 登录后立刻刷新，触发 updateStatus 杀掉弹窗
+            location.reload(); 
         }
 
         window.onload = () => {
-            typeEffect();
-            updateUI();
+            type();
+            updateStatus();
         };
     </script>
 </body>
