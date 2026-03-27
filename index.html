@@ -7,59 +7,52 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Microsoft YaHei", sans-serif; background: #0d0d0d; color: #eee; scroll-behavior: smooth; overflow-x: hidden; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: #000; color: #fff; scroll-behavior: smooth; }
 
-        /* 导航栏 */
+        /* 顶部导航 */
         nav {
             position: fixed; top: 0; width: 100%; padding: 20px 40px;
             display: flex; justify-content: flex-end; align-items: center; z-index: 1000;
         }
 
-        /* 登录后的用户组件 */
-        .user-wrapper { position: relative; cursor: pointer; }
-        #user-info-display { 
-            background: rgba(97, 218, 251, 0.2); 
-            color: #61dafb; border: 1px solid #61dafb;
-            padding: 8px 18px; border-radius: 30px; font-weight: bold; 
-            backdrop-filter: blur(10px); transition: 0.3s;
+        /* 登录后的用户名按钮 */
+        #user-info-btn { 
+            background: rgba(97, 218, 251, 0.2); color: #61dafb; border: 1px solid #61dafb;
+            padding: 8px 18px; border-radius: 30px; cursor: pointer; font-weight: bold;
+            backdrop-filter: blur(10px); display: none;
         }
-        #user-info-display:hover { background: rgba(97, 218, 251, 0.4); }
 
-        /* 弹出小卡片 */
+        /* 浮动名片卡 */
         #pop-card {
-            position: absolute; top: 55px; right: 0; width: 240px; 
+            position: absolute; top: 60px; right: 40px; width: 250px; 
             background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
-            padding: 20px; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-            text-align: center; animation: fadeIn 0.3s ease;
+            padding: 20px; display: none; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
-        @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
         #pop-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #61dafb; margin-bottom: 10px; }
-        #pop-card h4 { margin-bottom: 5px; color: #fff; }
-        #pop-card p { font-size: 0.8rem; color: #888; margin-bottom: 15px; }
-        .card-links { display: flex; flex-direction: column; gap: 10px; }
-        .card-links a, .card-links button { 
-            font-size: 0.85rem; padding: 8px; border-radius: 6px; 
-            text-decoration: none; cursor: pointer; border: none;
+        #pop-card p { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; }
+        .card-btns { display: flex; flex-direction: column; gap: 8px; }
+        .card-btns a, .card-btns button { 
+            padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; cursor: pointer; border: none;
         }
-        .btn-go { background: #61dafb; color: #000; font-weight: bold; }
-        .btn-out { background: #ff4757; color: #fff; }
+        .btn-user { background: #61dafb; color: #000; font-weight: bold; }
+        .btn-exit { background: #ff4757; color: #fff; }
 
         /* 全屏封面 */
         .hero {
             height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), 
                         url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; text-align: center;
         }
-        #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; padding-right: 12px; color: #fff; text-shadow: 0 0 15px rgba(0,0,0,0.5); min-height: 4.5rem; }
+        #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; padding-right: 15px; min-height: 4.5rem; }
 
-        /* 文章区 */
-        .main-content { max-width: 900px; margin: 0 auto; padding: 100px 20px; }
+        /* 文章区域 */
+        .main-container { max-width: 900px; margin: 0 auto; padding: 80px 20px; }
         .post-card { 
-            background: #1e1e1e; border-radius: 15px; display: flex; 
-            overflow: hidden; border: 1px solid #333; transition: 0.3s;
+            background: #111; border: 1px solid #333; border-radius: 15px; display: flex; 
+            overflow: hidden; margin-bottom: 30px; transition: 0.3s;
         }
-        .post-card:hover { border-color: #61dafb; transform: translateY(-5px); }
+        .post-card:hover { border-color: #61dafb; }
         .post-img { width: 35%; background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') center/cover; }
         .post-info { width: 65%; padding: 30px; }
     </style>
@@ -67,19 +60,20 @@
 <body>
 
     <nav>
-        <div id="g-login-wrap">
+        <div id="login-google-box">
             <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
 
-        <div class="user-wrapper" id="user-ui" style="display:none;" onclick="toggleCard(event)">
-            <div id="user-info-display"></div>
-            <div id="pop-card">
-                <img id="pop-img" src="">
-                <h4 id="pop-name"></h4>
-                <p id="pop-email"></p>
-                <div class="card-links">
-                    <a href="user.html" class="btn-go">\u4e2a\u4eba\u4e2d\u5fc3</a> <button onclick="doLogout()" class="btn-out">\u9000\u51fa\u767b\u5f55</button> </div>
+        <div id="user-info-btn" onclick="toggleCard(event)">用户名</div>
+        
+        <div id="pop-card">
+            <img id="pop-avatar" src="">
+            <h4 id="pop-name" style="margin-bottom:5px;"></h4>
+            <p id="pop-email"></p>
+            <div class="card-btns">
+                <a href="user.html" class="btn-user">个人中心</a>
+                <button onclick="logout()" class="btn-exit">退出登录</button>
             </div>
         </div>
     </nav>
@@ -88,64 +82,69 @@
         <h1 id="typewriter"></h1>
     </div>
 
-    <div class="main-content">
+    <div class="main-container">
+        <h2 style="color:#61dafb; margin-bottom:20px;">最新发布</h2>
         <div class="post-card">
             <div class="post-img"></div>
             <div class="post-info">
-                <h2 style="color:#61dafb; margin-bottom:10px;">\u6b22\u8fce\u6765\u5230\u6211\u7684\u7a7a\u95f4</h2>
-                <p style="color:#aaa;">\u8bf7\u5148\u767b\u5f55\u4ee5\u89e3\u9501\u66f4\u591a\u529f\u80fd\u3002</p>
+                <h2>我的极简博客上线了</h2>
+                <p style="color:#888;">登录后即可查看个人信息和安全密钥。</p>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 打字机 (Unicode规避乱码)
-        const welcomeStr = "\u4f60\u597d\uff0c\u6211\u662f\u6d69\u5b9d\u5440"; // 你好，我是浩宝呀
-        let charIdx = 0;
-        function type() {
-            if (charIdx < welcomeStr.length) {
-                document.getElementById("typewriter").innerText += welcomeStr.charAt(charIdx);
-                charIdx++;
-                setTimeout(type, 2000);
+        // 1. 打字机特效 (2秒一字)
+        const textStr = "你好，我是浩宝呀";
+        let idx = 0;
+        function playType() {
+            if (idx < textStr.length) {
+                document.getElementById("typewriter").innerText += textStr.charAt(idx);
+                idx++;
+                setTimeout(playType, 2000);
             }
         }
 
-        // 2. 状态检查
-        function initUI() {
-            const cachedName = localStorage.getItem("u_name");
-            if (cachedName) {
-                document.getElementById("g-login-wrap").style.display = "none";
-                document.getElementById("user-ui").style.display = "block";
-                document.getElementById("user-info-display").innerText = "\u6b22\u8fce\uff0c" + cachedName;
-                document.getElementById("pop-img").src = localStorage.getItem("u_pic");
-                document.getElementById("pop-name").innerText = cachedName;
+        // 2. 状态渲染
+        function renderUser() {
+            const uName = localStorage.getItem("u_name");
+            if (uName) {
+                document.getElementById("login-google-box").style.display = "none";
+                const btn = document.getElementById("user-info-btn");
+                btn.style.display = "block";
+                btn.innerText = "欢迎，" + uName;
+                
+                document.getElementById("pop-avatar").src = localStorage.getItem("u_pic");
+                document.getElementById("pop-name").innerText = uName;
                 document.getElementById("pop-email").innerText = localStorage.getItem("u_email");
             }
         }
 
         // 3. 登录回调
         function onSignIn(resp) {
-            const payload = JSON.parse(atob(resp.credential.split('.')[1]));
-            localStorage.setItem("u_name", payload.name);
-            localStorage.setItem("u_email", payload.email);
-            localStorage.setItem("u_pic", payload.picture);
+            const data = JSON.parse(atob(resp.credential.split('.')[1]));
+            localStorage.setItem("u_name", data.name);
+            localStorage.setItem("u_email", data.email);
+            localStorage.setItem("u_pic", data.picture);
             localStorage.setItem("u_time", new Date().toLocaleString());
-            location.reload();
+            location.reload(); 
         }
 
-        // 4. 功能函数
+        // 4. 交互
         function toggleCard(e) {
             e.stopPropagation();
             const card = document.getElementById("pop-card");
-            card.style.display = card.style.display === "block" ? "none" : "block";
+            card.style.display = (card.style.display === "block") ? "none" : "block";
         }
-        function doLogout() {
+        function logout() {
             localStorage.clear();
             location.reload();
         }
+
+        // 点击空白处关闭名片
         document.onclick = () => document.getElementById("pop-card").style.display = "none";
 
-        window.onload = () => { type(); initUI(); };
+        window.onload = () => { playType(); renderUser(); };
     </script>
 </body>
 </html>
