@@ -3,25 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人主页</title>
+    <title>我的个人主页 - 粒子效果</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
-        h1 { color: #333; margin-bottom: 0.5rem; }
-        p { color: #666; line-height: 1.6; }
-        .links a { display: inline-block; margin: 10px; color: #007bff; text-decoration: none; font-weight: bold; }
-        .links a:hover { text-decoration: underline; }
+        body { 
+            font-family: sans-serif; 
+            background: #282c34; /* 深色背景，更配粒子效果 */
+            color: #f0f0f0; /* 文字颜色 */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; /* 防止滚动条出现 */
+            position: relative; /* 为 canvas 定位 */
+        }
+        /* 粒子背景层 */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1; /* 在内容之下 */
+            background-color: #282c34; /* 和 body 背景一致 */
+        }
+        /* 内容层 */
+        .card { 
+            background: rgba(40, 44, 52, 0.8); /* 半透明背景，能看到粒子 */
+            padding: 2.5rem; /* 增加内边距 */
+            border-radius: 12px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3); /* 更深的阴影 */
+            text-align: center; 
+            max-width: 500px; 
+            z-index: 2; /* 在粒子之上 */
+            position: relative; /* 确保 z-index 生效 */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* 边框 */
+        }
+        h1 { 
+            color: #61dafb; /* 亮蓝色标题 */
+            margin-bottom: 0.8rem; 
+            font-size: 2.5rem; /* 增大字体 */
+        }
+        p { 
+            color: #bbbbbb; 
+            line-height: 1.8; 
+            font-size: 1.1rem; /* 增大字体 */
+        }
+        .links a { 
+            display: inline-block; 
+            margin: 15px; 
+            color: #f0f0f0; /* 链接颜色 */
+            text-decoration: none; 
+            font-weight: bold; 
+            padding: 8px 15px;
+            border: 2px solid #61dafb; /* 亮蓝色边框 */
+            border-radius: 5px;
+            transition: all 0.3s ease; /* 过渡动画 */
+        }
+        .links a:hover { 
+            background-color: #61dafb; 
+            color: #282c34; 
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>👋 你好，我是 [你的名字]</h1>
-        <p>这是我的 GitHub Pages 个人主页。</p>
-        <p>我不喜欢折腾本地环境，所以我直接在 GitHub 网页上把这个页面搞定了。</p>
+    <div id="particles-js"></div> <div class="card">
+        <h1>🚀 你好，我是 [你的名字]</h1>
+        <p>欢迎来到我的 GitHub Pages 页面！</p>
+        <p>我喜欢简洁和效率，所以这个页面直接在 GitHub 上搞定，还有点酷炫的粒子效果。</p>
         <div class="links">
-            <a href="https://github.com/你的用户名">我的 GitHub</a>
+            <a href="https://github.com/你的用户名" target="_blank">我的 GitHub</a>
             <a href="mailto:your-email@example.com">联系我</a>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        /* particles.js 配置 */
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80, // 粒子数量
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#61dafb" // 粒子颜色，与标题和链接颜色一致
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    },
+                    "image": {
+                        "src": "img/github.svg",
+                        "width": 100,
+                        "height": 100
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150, // 粒子连接线距离
+                    "color": "#61dafb", // 粒子连接线颜色
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6, // 粒子移动速度
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "grab" // 鼠标悬停时连接粒子
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push" // 鼠标点击时增加粒子
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 180, // 鼠标连接粒子距离
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+    </script>
 </body>
 </html>
