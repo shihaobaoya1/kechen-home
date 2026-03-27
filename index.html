@@ -2,149 +2,97 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>浩宝呀的个人站</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Microsoft YaHei", sans-serif; background: #000; color: #fff; scroll-behavior: smooth; }
+        body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; }
 
-        /* 顶部导航 */
-        nav {
-            position: fixed; top: 0; width: 100%; padding: 20px 40px;
-            display: flex; justify-content: flex-end; align-items: center; z-index: 1000;
+        /* 顶部：登录后显示用户名，没登录显示Google */
+        nav { position: fixed; top: 20px; right: 40px; z-index: 9999; }
+        #user-btn { 
+            display: none; background: #61dafb; color: #000; 
+            padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; 
         }
 
-        /* 登录后的用户名按钮 */
-        #user-info-btn { 
-            background: rgba(97, 218, 251, 0.2); color: #61dafb; border: 1px solid #61dafb;
-            padding: 8px 18px; border-radius: 30px; cursor: pointer; font-weight: bold;
-            backdrop-filter: blur(10px); display: none;
-        }
-
-        /* 浮动名片卡 */
-        #pop-card {
-            position: absolute; top: 60px; right: 40px; width: 250px; 
-            background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
-            padding: 20px; display: none; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
-        #pop-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #61dafb; margin-bottom: 10px; }
-        #pop-card p { font-size: 0.85rem; color: #aaa; margin-bottom: 15px; }
-        .card-btns { display: flex; flex-direction: column; gap: 8px; }
-        .card-btns a, .card-btns button { 
-            padding: 10px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; cursor: pointer; border: none;
-        }
-        .btn-user { background: #61dafb; color: #000; font-weight: bold; }
-        .btn-exit { background: #ff4757; color: #fff; }
-
-        /* 全屏封面 */
+        /* 封面 */
         .hero {
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), 
-                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
-            display: flex; justify-content: center; align-items: center; text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), 
+                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center/cover;
+            display: flex; justify-content: center; align-items: center;
         }
-        #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; padding-right: 15px; min-height: 4.5rem; }
+        #typewriter { font-size: 3rem; border-right: 3px solid #61dafb; min-height: 4rem; }
 
-        /* 文章区域 */
-        .main-container { max-width: 900px; margin: 0 auto; padding: 80px 20px; }
-        .post-card { 
-            background: #111; border: 1px solid #333; border-radius: 15px; display: flex; 
-            overflow: hidden; margin-bottom: 30px; transition: 0.3s;
+        /* 文章卡片：增加手型指针和背景色 */
+        .post-list { max-width: 800px; margin: 50px auto; padding: 20px; }
+        .card { 
+            background: #111; border: 1px solid #333; padding: 20px; 
+            border-radius: 10px; cursor: pointer; transition: 0.3s;
         }
-        .post-card:hover { border-color: #61dafb; }
-        .post-img { width: 35%; background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') center/cover; }
-        .post-info { width: 65%; padding: 30px; }
+        .card:hover { border-color: #61dafb; background: #1a1a1a; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div id="login-google-box">
+        <div id="g-box">
             <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
-
-        <div id="user-info-btn" onclick="toggleCard(event)">用户名</div>
-        
-        <div id="pop-card">
-            <img id="pop-avatar" src="">
-            <h4 id="pop-name" style="margin-bottom:5px;"></h4>
-            <p id="pop-email"></p>
-            <div class="card-btns">
-                <a href="user.html" class="btn-user">个人中心</a>
-                <button onclick="logout()" class="btn-exit">退出登录</button>
-            </div>
-        </div>
+        <div id="user-btn" onclick="location.href='user.html'">用户名加载中...</div>
     </nav>
 
     <div class="hero">
         <h1 id="typewriter"></h1>
     </div>
 
-    <div class="main-container">
-        <h2 style="color:#61dafb; margin-bottom:20px;">最新发布</h2>
-        <div class="post-card">
-            <div class="post-img"></div>
-            <div class="post-info">
-                <h2>我的极简博客上线了</h2>
-                <p style="color:#888;">登录后即可查看个人信息和安全密钥。</p>
-            </div>
+    <div class="post-list">
+        <h2 style="color:#61dafb; margin-bottom:20px;">最新文章</h2>
+        <div class="card" onclick="window.location.href='post1.html'">
+            <h3>我的极简博客上线了</h3>
+            <p style="color:#888; margin-top:10px;">点击此卡片即可跳转到文章详情页（前提是你创建了 post1.html）。</p>
         </div>
     </div>
 
     <script>
-        // 1. 打字机特效 (2秒一字)
-        const textStr = "你好，我是浩宝呀";
-        let idx = 0;
-        function playType() {
-            if (idx < textStr.length) {
-                document.getElementById("typewriter").innerText += textStr.charAt(idx);
-                idx++;
-                setTimeout(playType, 2000);
+        // 1. 打字机 (0.5秒一字，防止你以为没动)
+        const str = "你好，我是浩宝呀";
+        let n = 0;
+        function typeEffect() {
+            if (n < str.length) {
+                document.getElementById("typewriter").innerText += str.charAt(n);
+                n++;
+                setTimeout(typeEffect, 500); 
             }
         }
 
-        // 2. 状态渲染
-        function renderUser() {
-            const uName = localStorage.getItem("u_name");
-            if (uName) {
-                document.getElementById("login-google-box").style.display = "none";
-                const btn = document.getElementById("user-info-btn");
+        // 2. 核心：判断登录状态
+        function updateUI() {
+            const name = localStorage.getItem("u_name");
+            if (name) {
+                // 登录了：隐藏Google，显示用户名
+                document.getElementById("g-box").style.setProperty("display", "none", "important");
+                const btn = document.getElementById("user-btn");
                 btn.style.display = "block";
-                btn.innerText = "欢迎，" + uName;
-                
-                document.getElementById("pop-avatar").src = localStorage.getItem("u_pic");
-                document.getElementById("pop-name").innerText = uName;
-                document.getElementById("pop-email").innerText = localStorage.getItem("u_email");
+                btn.innerText = "欢迎，" + name;
             }
         }
 
         // 3. 登录回调
         function onSignIn(resp) {
-            const data = JSON.parse(atob(resp.credential.split('.')[1]));
-            localStorage.setItem("u_name", data.name);
-            localStorage.setItem("u_email", data.email);
-            localStorage.setItem("u_pic", data.picture);
+            const user = JSON.parse(atob(resp.credential.split('.')[1]));
+            localStorage.setItem("u_name", user.name);
+            localStorage.setItem("u_email", user.email);
+            localStorage.setItem("u_pic", user.picture);
             localStorage.setItem("u_time", new Date().toLocaleString());
-            location.reload(); 
+            location.reload(); // 必须刷新才能切换UI
         }
 
-        // 4. 交互
-        function toggleCard(e) {
-            e.stopPropagation();
-            const card = document.getElementById("pop-card");
-            card.style.display = (card.style.display === "block") ? "none" : "block";
-        }
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        // 点击空白处关闭名片
-        document.onclick = () => document.getElementById("pop-card").style.display = "none";
-
-        window.onload = () => { playType(); renderUser(); };
+        window.onload = () => {
+            typeEffect();
+            updateUI();
+        };
     </script>
 </body>
 </html>
