@@ -7,329 +7,145 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Microsoft YaHei", sans-serif; background: #0d0d0d; color: #eee; scroll-behavior: smooth; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: #0d0d0d; color: #eee; scroll-behavior: smooth; overflow-x: hidden; }
 
-        /* 顶部导航 */
+        /* 导航栏 */
         nav {
-            position: fixed; top: 0; width: 100%; padding: 15px 30px;
+            position: fixed; top: 0; width: 100%; padding: 20px 40px;
             display: flex; justify-content: flex-end; align-items: center; z-index: 1000;
         }
 
-        /* 登录后的用户信息样式 */
-        #user-auth-zone { display: flex; align-items: center; cursor: pointer; position: relative; }
-        .user-name-display { color: #61dafb; font-weight: bold; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(5px); }
-        
-        /* 弹出小名片 */
-        .user-pop-card {
-            position: absolute; top: 50px; right: 0; width: 220px; background: #1e1e1e;
-            border: 1px solid #333; border-radius: 12px; padding: 20px; display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+        /* 登录后的用户组件 */
+        .user-wrapper { position: relative; cursor: pointer; }
+        #user-info-display { 
+            background: rgba(97, 218, 251, 0.2); 
+            color: #61dafb; border: 1px solid #61dafb;
+            padding: 8px 18px; border-radius: 30px; font-weight: bold; 
+            backdrop-filter: blur(10px); transition: 0.3s;
         }
-        .user-pop-card img { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #61dafb; }
-        .user-pop-card p { font-size: 0.8rem; color: #aaa; margin-bottom: 15px; overflow: hidden; text-overflow: ellipsis; }
-        .user-pop-card a { font-size: 0.85rem; color: #61dafb; text-decoration: none; border: 1px solid #61dafb; padding: 5px 10px; border-radius: 5px; }
+        #user-info-display:hover { background: rgba(97, 218, 251, 0.4); }
+
+        /* 弹出小卡片 */
+        #pop-card {
+            position: absolute; top: 55px; right: 0; width: 240px; 
+            background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
+            padding: 20px; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            text-align: center; animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+        #pop-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #61dafb; margin-bottom: 10px; }
+        #pop-card h4 { margin-bottom: 5px; color: #fff; }
+        #pop-card p { font-size: 0.8rem; color: #888; margin-bottom: 15px; }
+        .card-links { display: flex; flex-direction: column; gap: 10px; }
+        .card-links a, .card-links button { 
+            font-size: 0.85rem; padding: 8px; border-radius: 6px; 
+            text-decoration: none; cursor: pointer; border: none;
+        }
+        .btn-go { background: #61dafb; color: #000; font-weight: bold; }
+        .btn-out { background: #ff4757; color: #fff; }
 
         /* 全屏封面 */
         .hero {
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), 
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), 
                         url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;
+            display: flex; justify-content: center; align-items: center;
         }
-        #typewriter { font-size: 3.5rem; min-height: 4.5rem; border-right: 3px solid #61dafb; padding-right: 10px; color: #fff; text-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; padding-right: 12px; color: #fff; text-shadow: 0 0 15px rgba(0,0,0,0.5); min-height: 4.5rem; }
 
-        .arrow {
-            position: absolute; bottom: 30px; font-size: 2.5rem; color: #fff;
-            animation: bounce 2s infinite; cursor: pointer; text-decoration: none;
+        /* 文章区 */
+        .main-content { max-width: 900px; margin: 0 auto; padding: 100px 20px; }
+        .post-card { 
+            background: #1e1e1e; border-radius: 15px; display: flex; 
+            overflow: hidden; border: 1px solid #333; transition: 0.3s;
         }
-        @keyframes bounce { 0%,20%,50%,80%,100% {transform:translateY(0)} 40% {transform:translateY(-10px)} }
-
-        /* 文章列表 */
-        .content-wrap { padding: 80px 20px; max-width: 900px; margin: 0 auto; }
-        .post-card {
-            background: rgba(30, 30, 30, 0.8); border-radius: 15px; overflow: hidden;
-            display: flex; transition: 0.3s; border: 1px solid #333; backdrop-filter: blur(5px); margin-bottom: 30px;
-        }
-        .post-img { width: 35%; background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover; min-height: 180px; }
-        .post-info { width: 65%; padding: 25px; }
-        .post-info h2 { color: #fff; margin-bottom: 10px; }
-        .post-info p { color: #aaa; font-size: 0.9rem; line-height: 1.6; }
-
-        footer { text-align: center; padding: 40px; color: #444; }
+        .post-card:hover { border-color: #61dafb; transform: translateY(-5px); }
+        .post-img { width: 35%; background: url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') center/cover; }
+        .post-info { width: 65%; padding: 30px; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div id="login-btn-container">
-            <div id="g_id_onload" 
-                 data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" 
-                 data-callback="onSignIn"></div>
+        <div id="g-login-wrap">
+            <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
 
-        <div id="user-auth-zone" style="display: none;" onclick="toggleCard()">
-            <div class="user-name-display" id="display-username">用户名</div>
-            <div class="user-pop-card" id="user-card">
-                <img id="card-pic" src="" alt="avatar">
-                <p id="card-email"></p>
-                <a href="user.html">进入个人中心</a>
+        <div class="user-wrapper" id="user-ui" style="display:none;" onclick="toggleCard(event)">
+            <div id="user-info-display"></div>
+            <div id="pop-card">
+                <img id="pop-img" src="">
+                <h4 id="pop-name"></h4>
+                <p id="pop-email"></p>
+                <div class="card-links">
+                    <a href="user.html" class="btn-go">\u4e2a\u4eba\u4e2d\u5fc3</a> <button onclick="doLogout()" class="btn-out">\u9000\u51fa\u767b\u5f55</button> </div>
             </div>
         </div>
     </nav>
 
-    <header class="hero">
+    <div class="hero">
         <h1 id="typewriter"></h1>
-        <a href="#main" class="arrow">↓</a>
-    </header>
+    </div>
 
-    <main id="main" class="content-wrap">
-        <h2 style="margin-bottom:30px; color:#61dafb">LATEST POSTS</h2>
-        <article class="post-card">
+    <div class="main-content">
+        <div class="post-card">
             <div class="post-img"></div>
             <div class="post-info">
-                <h2>欢迎来到我的空间</h2>
-                <p>点击上方登录，即可解锁个人中心和专属安全密钥。</p>
+                <h2 style="color:#61dafb; margin-bottom:10px;">\u6b22\u8fce\u6765\u5230\u6211\u7684\u7a7a\u95f4</h2>
+                <p style="color:#aaa;">\u8bf7\u5148\u767b\u5f55\u4ee5\u89e3\u9501\u66f4\u591a\u529f\u80fd\u3002</p>
             </div>
-        </article>
-    </main>
-
-    <footer>&copy; 2026 浩宝呀</footer>
+        </div>
+    </div>
 
     <script>
-        // 1. 打字机 (2秒一字)
-        const str = "你好，我是浩宝呀"; 
-        let i = 0;
-        function typing() {
-            if (i < str.length) {
-                document.getElementById("typewriter").innerText += str.charAt(i);
-                i++;
-                setTimeout(typing, 2000);
+        // 1. 打字机 (Unicode规避乱码)
+        const welcomeStr = "\u4f60\u597d\uff0c\u6211\u662f\u6d69\u5b9d\u5440"; // 你好，我是浩宝呀
+        let charIdx = 0;
+        function type() {
+            if (charIdx < welcomeStr.length) {
+                document.getElementById("typewriter").innerText += welcomeStr.charAt(charIdx);
+                charIdx++;
+                setTimeout(type, 2000);
             }
         }
 
-        // 2. 检查登录状态
-        function checkLogin() {
-            const name = localStorage.getItem("u_name");
-            if (name) {
-                document.getElementById("login-btn-container").style.display = "none";
-                document.getElementById("user-auth-zone").style.display = "flex";
-                document.getElementById("display-username").innerText = "欢迎，" + name;
-                document.getElementById("card-pic").src = localStorage.getItem("u_pic");
-                document.getElementById("card-email").innerText = localStorage.getItem("u_email");
+        // 2. 状态检查
+        function initUI() {
+            const cachedName = localStorage.getItem("u_name");
+            if (cachedName) {
+                document.getElementById("g-login-wrap").style.display = "none";
+                document.getElementById("user-ui").style.display = "block";
+                document.getElementById("user-info-display").innerText = "\u6b22\u8fce\uff0c" + cachedName;
+                document.getElementById("pop-img").src = localStorage.getItem("u_pic");
+                document.getElementById("pop-name").innerText = cachedName;
+                document.getElementById("pop-email").innerText = localStorage.getItem("u_email");
             }
         }
 
         // 3. 登录回调
-        function onSignIn(response) {
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        function onSignIn(resp) {
+            const payload = JSON.parse(atob(resp.credential.split('.')[1]));
             localStorage.setItem("u_name", payload.name);
             localStorage.setItem("u_email", payload.email);
             localStorage.setItem("u_pic", payload.picture);
             localStorage.setItem("u_time", new Date().toLocaleString());
-            localStorage.setItem("u_key", "SK-" + btoa(payload.sub).substring(0, 10).toUpperCase());
-            location.reload(); // 登录后刷新页面应用状态
+            location.reload();
         }
 
-        // 4. 切换名片显示
-        function toggleCard() {
-            const card = document.getElementById("user-card");
-            card.style.display = (card.style.display === "block") ? "none" : "block";
+        // 4. 功能函数
+        function toggleCard(e) {
+            e.stopPropagation();
+            const card = document.getElementById("pop-card");
+            card.style.display = card.style.display === "block" ? "none" : "block";
         }
-
-        window.onload = function() {
-            typing();
-            checkLogin();
-        };
-    </script>
-</body>
-</html><body>
-
-    <nav>
-        <div id="g_id_onload" data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" data-callback="onSignIn"></div>
-        <div class="g_id_signin" data-type="standard" data-theme="filled_blue"></div>
-    </nav>
-
-    <header class="hero">
-        <h1 id="typewriter"></h1>
-        <a href="#main" class="arrow">↓</a>
-    </header>
-
-    <main id="main" class="content-wrap">
-        <h2 class="section-title">POSTS</h2>
-
-        <a href="post1.html" class="post-link">
-            <article class="post-card">
-                <div class="post-img"></div>
-                <div class="post-info">
-                    <span class="post-date">2026 / 03 / 27</span>
-                    <h2>我的第一篇文章：从零开始的网页</h2>
-                    <p>这是一个完全托管在 GitHub Pages 上的静态页面。利用 HTML 和 CSS 实现了类似 ParticleX 的质感，并且集成了 Google 登录功能...</p>
-                </div>
-            </article>
-        </a>
-
-        <a href="post2.html" class="post-link">
-            <article class="post-card">
-                <div class="post-img"></div>
-                <div class="post-info">
-                    <span class="post-date">2026 / 03 / 26</span>
-                    <h2>安全密钥与用户中心实现</h2>
-                    <p>通过本地存储 (LocalStorage)，我们可以在不使用服务器的情况下，保存 Google 登录后的用户信息，并展示唯一的安全密钥...</p>
-                </div>
-            </article>
-        </a>
-    </main>
-
-    <footer>&copy; 2026 浩宝呀 | POWERED BY GITHUB PAGES</footer>
-
-    <script>
-        // 打字机逻辑 - 2000ms 一个字
-        const str = "你好，我是浩宝呀"; 
-        let i = 0;
-        function typing() {
-            if (i < str.length) {
-                document.getElementById("typewriter").innerHTML += str.charAt(i);
-                i++;
-                setTimeout(typing, 2000);
-            }
+        function doLogout() {
+            localStorage.clear();
+            location.reload();
         }
-        window.onload = typing;
+        document.onclick = () => document.getElementById("pop-card").style.display = "none";
 
-        // 登录逻辑
-        function onSignIn(response) {
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
-            localStorage.setItem("u_name", payload.name);
-            localStorage.setItem("u_email", payload.email);
-            localStorage.setItem("u_pic", payload.picture);
-            localStorage.setItem("u_time", new Date().toLocaleString());
-            localStorage.setItem("u_key", "SK-" + btoa(payload.sub).substring(0, 10).toUpperCase());
-            window.location.href = "user.html";
-        }
-    </script>
-</body>
-</html>        // --- 2. Google 登录回调函数 ---
-        function onSignIn(response) {
-            // 解析返回的令牌
-            const base64Url = response.credential.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(window.atob(base64));
-            
-            console.log("用户信息:", payload);
-            alert("登录成功！\n欢迎你，" + payload.name);
-            
-            // 登录后把标题改掉
-            document.getElementById("typewriter").innerHTML = "你好，" + payload.given_name;
-        }
-
-        // --- 3. 平滑滚动 ---
-        document.querySelector('.scroll-down').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelector('#content').scrollIntoView({ behavior: 'smooth' });
-        });
-    </script>
-</body>
-</html>        /* 光标闪烁动画 */
-        .cursor-blink {
-            animation: blink 0.7s infinite;
-        }
-        @keyframes blink {
-            50% { border-color: transparent; }
-        }
-
-        .header p { font-size: 1.2rem; opacity: 0.9; letter-spacing: 1px; }
-
-        /* 2. 动态下箭头 */
-        .scroll-down {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2.5rem;
-            color: white;
-            cursor: pointer;
-            animation: bounce 2s infinite;
-            text-decoration: none;
-            opacity: 0.8;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
-            40% {transform: translateX(-50%) translateY(-10px);}
-            60% {transform: translateX(-50%) translateY(-5px);}
-        }
-
-        /* 3. 文章列表内容区 */
-        .container { max-width: 850px; margin: 0 auto; padding: 60px 20px; }
-        .section-title { margin-bottom: 40px; font-size: 1.8rem; position: relative; padding-bottom: 10px; }
-        .section-title::after { content: ''; width: 50px; height: 3px; background: #61dafb; position: absolute; bottom: 0; left: 0; }
-
-        .post-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-        }
-        .post-card:hover { transform: translateY(-8px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .post-card h2 { margin-bottom: 12px; color: #2c3e50; }
-        .post-card .date { color: #95a5a6; font-size: 0.85rem; margin-bottom: 15px; display: block; }
-        .post-card p { color: #7f8c8d; font-size: 1rem; }
-
-        footer { text-align: center; padding: 50px; color: #bdc3c7; background: #fff; margin-top: 20px; }
-    </style>
-</head>
-<body>
-
-    <header class="header">
-        <h1 id="typewriter" class="cursor-blink"></h1>
-        <p>心有所信，方能远行</p>
-        <a href="#content" class="scroll-down">↓</a>
-    </header>
-
-    <main id="content" class="container">
-        <h2 class="section-title">最新发布</h2>
-
-        <article class="post-card">
-            <span class="date">2026年3月27日</span>
-            <h2>我的极简博客上线了</h2>
-            <p>这个页面完全通过 GitHub 网页端编辑，跳过了所有复杂的本地配置。使用了自定义背景图和打字机特效。</p>
-        </article>
-
-        <article class="post-card">
-            <span class="date">2026年3月25日</span>
-            <h2>关于 ParticleX 与 Smackdown 风格</h2>
-            <p>融合了粒子效果的灵感与 Smackdown 的全屏布局，这正是我想追求的视觉效果。</p>
-        </article>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 你的名字 | Powered by GitHub Pages</p>
-    </footer>
-
-    <script>
-        // --- 打字机效果设置 ---
-        const text = "你好，我是你的名字"; // 这里改你想显示的文字
-        const speed = 1000; // 1000毫秒（1秒）一个字
-        let i = 0;
-
-        function typeWriter() {
-            if (i < text.length) {
-                document.getElementById("typewriter").innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typeWriter, speed);
-            }
-        }
-
-        // 页面加载完成后开始打字
-        window.onload = typeWriter;
-
-        // --- 平滑滚动 ---
-        document.querySelector('.scroll-down').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelector('#content').scrollIntoView({ behavior: 'smooth' });
-        });
+        window.onload = () => { type(); initUI(); };
     </script>
 </body>
 </html>
