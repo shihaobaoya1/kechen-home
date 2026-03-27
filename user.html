@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心</title>
+    <style>
+        body { background: #121212; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .panel { background: #1e1e1e; width: 380px; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; }
+        .head-img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #61dafb; margin-bottom: 15px; }
+        .data-row { background: #262626; margin: 10px 0; padding: 12px; border-radius: 10px; text-align: left; }
+        .label { font-size: 0.75rem; color: #888; margin-bottom: 4px; display: block; }
+        .value { font-size: 0.95rem; color: #eee; word-break: break-all; }
+        .key-text { color: #ff9800; font-family: monospace; font-weight: bold; letter-spacing: 1px; }
+        .logout-btn { background: #ff4757; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .logout-btn:hover { background: #ff6b81; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <img id="p-img" src="" class="head-img">
+        <h2 id="p-name" style="margin-bottom: 20px; color: #61dafb;">读取中...</h2>
+        
+        <div class="data-row">
+            <span class="label">账户邮箱</span>
+            <span id="p-email" class="value"></span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">登录时间</span>
+            <span id="p-time" class="value"></span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">安全密钥 (Secure Key)</span>
+            <span id="p-key" class="value key-text"></span>
+        </div>
+
+        <button class="logout-btn" onclick="doLogout()">安全退出</button>
+    </div>
+
+    <script>
+        // 加载用户数据
+        window.onload = function() {
+            const name = localStorage.getItem("u_name");
+            if (!name) {
+                location.href = "index.html";
+                return;
+            }
+            document.getElementById("p-name").innerText = name;
+            document.getElementById("p-email").innerText = localStorage.getItem("u_email");
+            document.getElementById("p-img").src = localStorage.getItem("u_pic");
+            document.getElementById("p-time").innerText = localStorage.getItem("u_time");
+            document.getElementById("p-key").innerText = localStorage.getItem("u_key");
+        };
+
+        // 退出登录
+        function doLogout() {
+            if(confirm("确定要退出并清除本地缓存吗？")) {
+                localStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>
