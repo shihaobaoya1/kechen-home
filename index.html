@@ -5,39 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>浩宝呀的个人站</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; }
-
-        /* --- 核心修复 1：强制隐藏 Google 自动生成的弹窗容器 --- */
         #credential_picker_container, 
-        iframe[title*="Google Privacy Policy"],
-        .google-one-tap-container { 
-            display: none !important; 
-            visibility: hidden !important; 
-            opacity: 0 !important; 
+        #credential_picker_iframe,
+        iframe[src*="accounts.google.com"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            opacity: 0 !important;
             pointer-events: none !important;
         }
 
-        /* 导航 */
-        nav { position: fixed; top: 20px; right: 40px; z-index: 20000; }
-        #user-info { 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; }
+
+        nav { position: fixed; top: 20px; right: 40px; z-index: 10001; }
+        #user-btn { 
             display: none; background: #61dafb; color: #000; 
             padding: 10px 22px; border-radius: 25px; cursor: pointer; font-weight: bold; 
         }
 
-        /* 封面：确保点击穿透 */
         .hero {
             height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), 
-                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center/cover;
+                        url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
             display: flex; justify-content: center; align-items: center;
-            pointer-events: none; /* 必须：否则点不动下面的卡片 */
+            pointer-events: none; /* 让点击穿透到文章卡片 */
         }
         #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; min-height: 4.5rem; }
 
-        /* 文章列表 */
         .post-list { 
-            position: relative; z-index: 10000; 
+            position: relative; z-index: 9999; 
             max-width: 850px; margin: -100px auto 100px; padding: 0 20px; 
         }
         .card { 
@@ -50,8 +48,8 @@
 <body>
 
     <nav>
-        <div id="auth-target"></div>
-        <div id="user-info" onclick="location.href='user.html'"></div>
+        <div id="g-login-btn"></div>
+        <div id="user-btn" onclick="location.href='user.html'"></div>
     </nav>
 
     <div class="hero">
@@ -59,28 +57,15 @@
     </div>
 
     <div class="post-list">
-        <h2 style="margin-bottom:25px; color:#61dafb; letter-spacing:4px;">LATEST POSTS</h2>
         <div class="card" onclick="location.href='post1.html'">
             <h3>我的极简博客上线了</h3>
-            <p>如果登录后右上角还有白色横条，请务必【彻底清除浏览器缓存】再试。</p>
+            <p style="color:#888;">测试说明：如果点击这里能跳转，说明层级修复成功。如果右上角没有白色横条，说明拦截成功。</p>
         </div>
     </div>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-        // --- 核心修复 2：动态监控并秒杀弹窗 ---
-        const killGooglePop = () => {
-            const pop = document.getElementById('credential_picker_container');
-            if (pop) pop.remove();
-            const iframes = document.querySelectorAll('iframe');
-            iframes.forEach(f => {
-                if (f.src.includes('accounts.google.com')) f.remove();
-            });
-        };
-        // 只要页面有动静就检查一遍，不给它弹出来的机会
-        const observer = new MutationObserver(killGooglePop);
-        observer.observe(document.body, { childList: true, subtree: true });
-
-        // 打字机
+        // 1. 打字机
         const text = "你好，我是浩宝呀";
         let i = 0;
         function type() {
@@ -91,42 +76,46 @@
             }
         }
 
-        // 登录逻辑
-        function handleAuth() {
-            const savedName = localStorage.getItem("u_name");
-            if (savedName) {
-                document.getElementById("user-info").style.display = "block";
-                document.getElementById("user-info").innerText = "欢迎，" + savedName;
-                // 已登录状态下，每隔 100 毫秒强制杀一次弹窗，杀满 3 秒
-                let count = 0;
-                const timer = setInterval(() => {
-                    killGooglePop();
-                    if (count++ > 30) clearInterval(timer);
-                }, 100);
-            } else {
-                const gScript = document.createElement('script');
-                gScript.src = "https://accounts.google.com/gsi/client";
-                gScript.onload = () => {
+        // 2. 登录逻辑
+        window.onload = () => {
+            type();
+            const name = localStorage.getItem("u_name");
+            
+            // 延迟一点点初始化，确保 Google 脚本加载完
+            setTimeout(() => {
+                if (name) {
+                    // 已登录：显示按钮，彻底不再初始化 Google Prompt
+                    document.getElementById("user-btn").style.display = "block";
+                    document.getElementById("user-btn").innerText = "欢迎，" + name;
+                    
+                    // 【关键】如果发现 Google 偷偷生成了容器，直接物理切除
+                    const pop = document.getElementById('credential_picker_container');
+                    if(pop) pop.remove();
+                } else {
+                    // 未登录：才初始化
                     google.accounts.id.initialize({
                         client_id: "221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com",
                         callback: onSignIn,
-                        auto_select: false
+                        auto_select: false, // 禁用自动弹出
+                        itp_support: true
                     });
-                    google.accounts.id.renderButton(document.getElementById("auth-target"), { theme: "outline" });
-                };
-                document.head.appendChild(gScript);
-            }
-        }
+                    google.accounts.id.renderButton(
+                        document.getElementById("g-login-btn"),
+                        { theme: "outline", size: "large" }
+                    );
+                    // 只有没登录才允许 prompt，但这里我们甚至可以不写这一行，只靠按钮登录
+                    // google.accounts.id.prompt(); 
+                }
+            }, 500);
+        };
 
         function onSignIn(resp) {
             const user = JSON.parse(atob(resp.credential.split('.')[1]));
             localStorage.setItem("u_name", user.name);
             localStorage.setItem("u_email", user.email);
             localStorage.setItem("u_pic", user.picture);
-            location.reload(); 
+            location.reload();
         }
-
-        window.onload = () => { type(); handleAuth(); };
     </script>
 </body>
 </html>
