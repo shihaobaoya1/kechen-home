@@ -2,53 +2,48 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>浩宝呀的个人站</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        /* 1. 基础样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: #fff; font-family: "Microsoft YaHei", sans-serif; overflow-x: hidden; }
 
-        /* 2. 导航与登录状态 */
-        nav { position: fixed; top: 20px; right: 40px; z-index: 10000; }
+        /* 导航栏 */
+        nav { position: fixed; top: 20px; right: 40px; z-index: 10001; }
         #user-info { 
             display: none; background: #61dafb; color: #000; 
-            padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; 
+            padding: 10px 22px; border-radius: 25px; cursor: pointer; font-weight: bold; 
+            box-shadow: 0 4px 15px rgba(97,218,251,0.3);
         }
 
-        /* 3. 封面 */
+        /* 封面 */
         .hero {
             height: 100vh;
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), 
                         url('https://img.win3000.com/m00/30/24/e28b44b34f3ca55c6b3cb2b0a64c491d.jpg') no-repeat center center/cover;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; pointer-events: none; /* 让封面不阻挡点击 */
         }
-        #typewriter { font-size: 3rem; border-right: 3px solid #61dafb; min-height: 4rem; pointer-events: none; }
+        #typewriter { font-size: 3.5rem; border-right: 3px solid #61dafb; min-height: 4.5rem; color: #fff; }
 
-        /* 4. 文章列表 - 提升 z-index 确保可点 */
+        /* 文章列表 - 核心修复：确保层级最高且不被遮挡 */
         .post-list { 
-            position: relative; z-index: 999; 
-            max-width: 800px; margin: -50px auto 50px; padding: 20px; 
+            position: relative; z-index: 9999; 
+            max-width: 850px; margin: -100px auto 100px; padding: 0 20px; 
         }
         .card { 
-            background: #111; border: 1px solid #333; padding: 25px; 
-            border-radius: 12px; cursor: pointer; transition: 0.3s;
-            margin-bottom: 20px;
+            background: rgba(20, 20, 20, 0.9); border: 1px solid #333; padding: 30px; 
+            border-radius: 15px; cursor: pointer; transition: all 0.3s ease;
+            margin-bottom: 25px; backdrop-filter: blur(10px);
         }
-        .card:hover { border-color: #61dafb; transform: translateY(-5px); background: #1a1a1a; }
-        .card h3 { color: #61dafb; margin-bottom: 10px; }
+        .card:hover { border-color: #61dafb; transform: translateY(-10px); background: rgba(40, 40, 40, 0.9); }
+        .card h3 { color: #61dafb; margin-bottom: 12px; font-size: 1.5rem; }
+        .card p { color: #bbb; line-height: 1.6; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div id="g_box">
-            <div id="g_id_onload" 
-                 data-client_id="221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com" 
-                 data-callback="onSignIn"
-                 data-auto_prompt="true"> </div>
-            <div class="g_id_signin" data-type="standard"></div>
-        </div>
+        <div id="auth-container"></div>
         <div id="user-info" onclick="location.href='user.html'"></div>
     </nav>
 
@@ -57,16 +52,16 @@
     </div>
 
     <div class="post-list">
-        <h2 style="margin-bottom:20px; color:#aaa; font-size: 1rem; letter-spacing: 2px;">最新发布 / POSTS</h2>
+        <h2 style="margin-bottom:25px; color:#555; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 4px;">Latest Articles</h2>
         
         <div class="card" onclick="location.href='post1.html'">
             <h3>我的极简博客上线了</h3>
-            <p style="color:#888;">点击此区域即可跳转。如果无法跳转，请检查根目录下是否有 post1.html 文件。</p>
+            <p>点击此处跳转文章。我们修复了登录弹窗残留和页面层级遮挡的问题，现在点击体验更加顺滑。</p>
         </div>
     </div>
 
     <script>
-        // 1. 打字机 (0.5秒一字)
+        // 1. 打字机逻辑
         const text = "你好，我是浩宝呀";
         let i = 0;
         function type() {
@@ -77,38 +72,50 @@
             }
         }
 
-        // 2. 关键：更新界面并杀掉 Google 弹窗
-        function updateStatus() {
+        // 2. 登录与状态控制
+        const CLIENT_ID = "221293974861-0dj6irr35a8q05f8scq2dog1k0gklmcv.apps.googleusercontent.com";
+
+        function initAuth() {
             const name = localStorage.getItem("u_name");
+            
             if (name) {
-                // 1. 隐藏 Google 标准按钮
-                document.getElementById("g_box").style.display = "none";
-                // 2. 显示自定义用户名
+                // 已登录：直接显示名字，不加载 Google 任何东西
                 const info = document.getElementById("user-info");
                 info.style.display = "block";
                 info.innerText = "欢迎，" + name;
-                
-                // 3. 【核心修复】强制关闭 Google 的快捷登录弹窗 (One Tap)
-                if (typeof google !== 'undefined') {
-                    google.accounts.id.cancel(); 
-                }
+            } else {
+                // 未登录：动态加载 Google 脚本和渲染按钮
+                const script = document.createElement('script');
+                script.src = "https://accounts.google.com/gsi/client";
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    google.accounts.id.initialize({
+                        client_id: CLIENT_ID,
+                        callback: onSignIn,
+                        auto_select: false // 禁用自动选择，减少弹窗干扰
+                    });
+                    google.accounts.id.renderButton(
+                        document.getElementById("auth-container"),
+                        { theme: "outline", size: "large", shape: "pill" }
+                    );
+                };
+                document.head.appendChild(script);
             }
         }
 
-        // 3. 登录成功回调
         function onSignIn(resp) {
             const user = JSON.parse(atob(resp.credential.split('.')[1]));
             localStorage.setItem("u_name", user.name);
             localStorage.setItem("u_email", user.email);
             localStorage.setItem("u_pic", user.picture);
             localStorage.setItem("u_time", new Date().toLocaleString());
-            // 登录后立刻刷新，触发 updateStatus 杀掉弹窗
             location.reload(); 
         }
 
         window.onload = () => {
             type();
-            updateStatus();
+            initAuth();
         };
     </script>
 </body>
